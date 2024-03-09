@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Attach a popup to a marker instance</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+<style>
+body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+#map { position: absolute; top: 0; bottom: 0; width: 70%; }
+.menu {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+.menu-item {
+    cursor: pointer;
+    margin-bottom: 5px;
+    padding: 8px;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    transition: background-color 0.3s ease;
+}
+.menu-item:hover {
+    background-color: #e9ecef;
+}
+.separator {
+    padding: 5px;
+    color: #888;
+    font-size: 12px;
+}
+.marker {
+    background-size: cover;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+.marker-description {
+    font-size: 14px;
+    max-height: 100px; /* Altura inicial máxima del cuadro emergente */
+    overflow-y: auto; /* Habilita el desplazamiento vertical */
+}
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<div id="menu" class="menu"></div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1Ijoicnl1amluaGlyYWdpIiwiYSI6ImNsc3hkbmdmazAxeTYyaW1jMjZ5ejBwYTgifQ.tXxXC8eIOK7j6g1EXS2lfw';
+const monument = [-75.6115, 6.2311];
+const markers = [
+    { coords: [-75.612, 6.231], title: 'Marker 1', imageUrl: '', description: 'Description for Marker 1. This is a long description to test overflow.' },
+    { coords: [-75.610, 6.230], title: 'Marker 2', imageUrl: '', description: 'Description for Marker 2' },
+    // Resto de tus marcadores aquí...
+];
+
+const map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/light-v11',
+    center: monument,
+    zoom: 15
+});
+
+// Función para crear marcadores con imágenes personalizadas
+function createMarker(markerInfo) {
+    const { coords, title, imageUrl, description } = markerInfo;
+    const popup = new mapboxgl.Popup({ offset: 25 });
+    const el = document.createElement('div');
+    el.className = 'marker';
+    el.style.backgroundImage = `url(${imageUrl})`;
+    el.onclick = () => flyToMarker(coords);
+
+    const marker = new mapboxgl.Marker(el)
+        .setLngLat(coords)
+        .setPopup(popup)
+        .addTo(map);
+
+    // Agrega elemento al menú
+    const menu = document.getElementById('menu');
+    const menuItem = document.createElement('div');
+    menuItem.className = 'menu-item';
+    menuItem.textContent = title;
+    menuItem.onclick = () => flyToMarker(coords);
+    menu.appendChild(menuItem);
+
+    // Agrega descripción al marcador
+    if (description) {
+        const descriptionEl = document.createElement('div');
+        descriptionEl.className = 'marker-description';
+        descriptionEl.textContent = description;
+        popup.setDOMContent(descriptionEl);
+
+        // Ajusta dinámicamente la altura del cuadro emergente del marcador según la altura del contenido
+        descriptionEl.addEventListener('click', () => {
+            const contentHeight = descriptionEl.scrollHeight;
+            const maxHeight = Math.min(contentHeight, 300); // Altura máxima de 300px
+            descriptionEl.style.maxHeight = maxHeight + 'px';
+        });
+    }
+
+    // Agrega separador después de cada segundo marcador
+    if (menu.childNodes.length % 3 === 0 && menu.childNodes.length !== markers.length) {
+        const separationNumber = Math.floor(menu.childNodes.length / 3);
+        const separator = document.createElement('div');
+        separator.className = 'separator';
+        separator.textContent = `Separación ${separationNumber}`;
+        menu.appendChild(separator);
+    }
+}
+
+// Crea marcadores con imágenes personalizadas
+markers.forEach(markerInfo => createMarker(markerInfo));
+
+// Función para volar hacia un marcador
+function flyToMarker(coords) {
+    map.flyTo({ center: coords, zoom: 16 });
+}
+</script>
+</body>
+</html>
