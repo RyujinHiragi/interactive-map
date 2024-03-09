@@ -22,4 +22,4 @@ Este proyecto consiste en un mapa interactivo que muestra marcadores personaliza
 
 ## Créditos
 
-Este proyecto fue desarrollado por Ryu.
+Este proyecto fue desarrollado por @Ryu.
